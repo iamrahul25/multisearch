@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI MultiSearch - Live Visual Preview & Demo</title>
+  <link rel="stylesheet" href="../content/content.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top right, #f4f0ff 0%, #ebe7ff 40%, #e2e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      color: #0f172a;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .demo-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #1e1b4b;
+    }
+
+    .chrome-badge {
+      font-size: 13px;
+      font-weight: 600;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #475569;
+    }
+
+    .demo-header p {
+      font-size: 15px;
+      color: #475569;
+      margin-top: 6px;
+    }
+
+    .showcase-stage {
+      display: flex;
+      gap: 28px;
+      max-width: 1280px;
+      width: 100%;
+      align-items: flex-start;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Left: Popup Mockup Preview Frame */
+    .popup-frame {
+      width: 400px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 16px 40px rgba(88, 69, 235, 0.12), 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 1.5px solid rgba(226, 232, 240, 0.8);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .frame-titlebar {
+      padding: 10px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .traffic-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .popup-iframe {
+      width: 100%;
+      height: 520px;
+      border: none;
+      display: block;
+    }
+
+    /* Right: Browser Window Mockup */
+    .browser-frame {
+      flex: 1;
+      min-width: 600px;
+      max-width: 800px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 20px 48px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+      border: 1.5px solid rgba(226, 232, 240, 0.9);
+      overflow: hidden;
+      position: relative;
+      height: 560px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Browser Tab Bar */
+    .browser-tabbar {
+      background: #f1f5f9;
+      padding: 8px 12px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid #cbd5e1;
+    }
+
+    .browser-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #e2e8f0;
+      border-radius: 10px 10px 0 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .browser-tab.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.03);
+    }
+
+    .browser-addressbar {
+      background: #ffffff;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .address-pill {
+      flex: 1;
+      background: #f1f5f9;
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #334155;
+    }
+
+    .browser-content {
+      flex: 1;
+      background: #ffffff;
+      padding: 24px 32px;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .ai-logo-hero {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .ai-logo-hero h2 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .ai-response-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px;
+      line-height: 1.6;
+      font-size: 13.5px;
+      color: #1e293b;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 12.5px;
+    }
+
+    .comparison-table th, .comparison-table td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .comparison-table th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    /* Embedded Floating Switcher Bar */
+    .mock-switcher-wrapper {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      width: auto;
+    }
+
+    /* Features Row */
+    .features-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 28px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .feature-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .feature-icon-bubble {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #f3f0ff;
+      color: #5845eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-card h3 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+
+    .feature-card p {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="demo-header">
+    <h1>
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#5845eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 2 7 12 12 22 7 12 2" fill="#5845eb" stroke="#5845eb"></polygon>
+        <polyline points="2 17 12 22 22 17" stroke="#5845eb"></polyline>
+        <polyline points="2 12 12 17 22 12" stroke="#5845eb"></polyline>
+      </svg>
+      AI MultiSearch
+      <span class="chrome-badge">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <circle cx="12" cy="12" r="10" fill="#4285F4"/>
+          <circle cx="12" cy="12" r="4" fill="#ffffff"/>
+        </svg>
+        Chrome Extension
+      </span>
+    </h1>
+    <p>Ask once, get answers from multiple AI platforms</p>
+  </header>
+
+  <div class="showcase-stage">
+    <!-- Left: Popup Frame -->
+    <div class="popup-frame">
+      <div class="frame-titlebar">
+        <div class="traffic-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <span>AI MultiSearch Popup</span>
+        <span>⚙️</span>
+      </div>
+      <iframe class="popup-iframe" src="../popup/popup.html"></iframe>
+    </div>
+
+    <!-- Right: Simulated AI Chrome Tab with Floating Switcher -->
+    <div class="browser-frame">
+      <div class="browser-tabbar" id="mock-tabbar">
+        <div class="traffic-dots" style="margin-right: 8px;">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <div class="browser-tab active" data-platform="chatgpt">
+          <span>ChatGPT</span>
+        </div>
+        <div class="browser-tab" data-platform="gemini">
+          <span>Gemini</span>
+        </div>
+        <div class="browser-tab" data-platform="claude">
+          <span>Claude</span>
+        </div>
+        <div class="browser-tab" data-platform="deepseek">
+          <span>DeepSeek</span>
+        </div>
+      </div>
+
+      <div class="browser-addressbar">
+        <span>←</span>
+        <span>→</span>
+        <span>⟳</span>
+        <div class="address-pill">
+          <span>🔒</span>
+          <span id="mock-url">https://chatgpt.com</span>
+        </div>
+      </div>
+
+      <div class="browser-content" id="mock-content">
+        <div class="ai-logo-hero">
+          <span id="mock-hero-icon"></span>
+          <h2 id="mock-hero-title">ChatGPT</h2>
+        </div>
+
+        <div class="ai-response-box">
+          <h3 id="mock-question-title" style="margin-bottom: 8px; color: #0f172a;">
+            React Native vs Flutter: Production Comparison
+          </h3>
+          <p id="mock-summary" style="margin-bottom: 12px;">
+            Here is a structured comparison between <strong>React Native</strong> and <strong>Flutter</strong> for building production-grade mobile applications:
+          </p>
+
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Aspect</th>
+                <th>React Native</th>
+                <th>Flutter</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Language</td>
+                <td>JavaScript / TypeScript</td>
+                <td>Dart</td>
+              </tr>
+              <tr>
+                <td>Performance</td>
+                <td>Good (near-native bridge/JSI)</td>
+                <td>Excellent (native compiled Skia/Impeller)</td>
+              </tr>
+              <tr>
+                <td>Development Speed</td>
+                <td>Faster (larger ecosystem)</td>
+                <td>Fast (hot reload, rich widgets)</td>
+              </tr>
+              <tr>
+                <td>Ecosystem</td>
+                <td>Very large (React, JS tools)</td>
+                <td>Growing (Google-backed)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Live Floating Switcher Mockup inside the Browser -->
+      <div class="mock-switcher-wrapper">
+        <div class="aims-switch-bar">
+          <div class="aims-brand-label">
+            <div class="aims-brand-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="currentColor"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+            </div>
+            <span>Switch Results</span>
+          </div>
+
+          <div class="aims-platforms-container" id="switcher-platforms">
+            <!-- Platform Pills -->
+          </div>
+
+          <button class="aims-action-btn" title="Open MultiSearch options">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom 4 Feature Highlights matching mockup -->
+  <div class="features-row">
+    <div class="feature-card">
+      <div class="feature-icon-bubble">⚡</div>
+      <div>
+        <h3>One-Click Search</h3>
+        <p>Send your prompt to multiple AI tools instantly</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-bubble">📂</div>
+      <div>
+        <h3>Auto Open & Fill</h3>
+        <p>Opens tabs, pastes your text and attachments</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-bubble">🔄</div>
+      <div>
+        <h3>Switch & Compare</h3>
+        <p>Easily toggle between AI results with 1-click floating bar</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-bubble">📎</div>
+      <div>
+        <h3>Supports Attachments</h3>
+        <p>Works with files, images, PDFs, code, and documents</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../icons/platform-icons.js"></script>
+  <script src="../utils/platforms.js"></script>
+  <script>
+    // Live interactive demo simulation
+    const activePlatforms = ['chatgpt', 'gemini', 'claude', 'deepseek'];
+    let currentPlatform = 'chatgpt';
+
+    const platformDetails = {
+      chatgpt: {
+        name: 'ChatGPT',
+        url: 'https://chatgpt.com',
+        summary: 'ChatGPT excels at broad architectural reasoning, large npm ecosystem knowledge, and JS/TS integrations.'
+      },
+      gemini: {
+        name: 'Gemini',
+        url: 'https://gemini.google.com/app',
+        summary: 'Gemini provides strong cross-platform insights with multimodal context and deep Google ecosystem synthesis.'
+      },
+      claude: {
+        name: 'Claude',
+        url: 'https://claude.ai/new',
+        summary: 'Claude offers exceptionally detailed code refactorings, cleaner architecture design, and nuanced tradeoff analysis.'
+      },
+      deepseek: {
+        name: 'DeepSeek',
+        url: 'https://chat.deepseek.com',
+        summary: 'DeepSeek provides fast algorithmic code generation, benchmark analysis, and low-level optimization notes.'
+      }
+    };
+
+    function renderDemoSwitcher() {
+      const container = document.getElementById('switcher-platforms');
+      container.innerHTML = '';
+
+      activePlatforms.forEach(key => {
+        const p = PLATFORMS[key];
+        const isCurrent = (key === currentPlatform);
+        const iconSvg = PLATFORM_ICONS[key] || PLATFORM_ICONS.layers;
+
+        const pill = document.createElement('button');
+        pill.className = `aims-platform-pill ${isCurrent ? 'active' : ''}`;
+        pill.innerHTML = `
+          <span class="aims-platform-icon">${iconSvg}</span>
+          <span>${p.name}</span>
+        `;
+
+        pill.onclick = () => selectPlatform(key);
+        container.appendChild(pill);
+      });
+    }
+
+    function selectPlatform(key) {
+      currentPlatform = key;
+      const details = platformDetails[key];
+
+      // Update mock browser address bar and content
+      document.getElementById('mock-url').textContent = details.url;
+      document.getElementById('mock-hero-title').textContent = details.name;
+      document.getElementById('mock-hero-icon').innerHTML = PLATFORM_ICONS[key];
+      document.getElementById('mock-summary').innerHTML = `
+        <strong>${details.name} Result:</strong> ${details.summary}
+      `;
+
+      // Update browser tabs
+      document.querySelectorAll('.browser-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.platform === key);
+      });
+
+      renderDemoSwitcher();
+    }
+
+    // Tab clicks in browser header
+    document.querySelectorAll('.browser-tab').forEach(tab => {
+      tab.onclick = () => selectPlatform(tab.dataset.platform);
+    });
+
+    // Initial render
+    selectPlatform('chatgpt');
+  </script>
+</body>
+</html>
+

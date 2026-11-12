@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI MultiSearch Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <!-- Header -->
+    <header class="options-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" fill="white" stroke="white"></polygon>
+            <polyline points="2 17 12 22 22 17" stroke="white"></polyline>
+            <polyline points="2 12 12 17 22 12" stroke="white"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1>AI MultiSearch Settings</h1>
+          <p class="subtitle">Customize multi-search execution, defaults, and hotkeys</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Settings Form -->
+    <main class="settings-content">
+      <!-- Section: Search & Injection -->
+      <section class="settings-section">
+        <h2 class="section-title">Automation & Behavior</h2>
+        
+        <div class="setting-item">
+          <div class="setting-text">
+            <label for="auto-submit" class="setting-label">Auto-Submit Prompts</label>
+            <p class="setting-desc">Automatically hit Send after pasting prompt and attachments into the AI platforms.</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="auto-submit" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-text">
+            <label for="submit-delay" class="setting-label">Submission Delay (seconds)</label>
+            <p class="setting-desc">Wait time before triggering send to allow image & file uploads to finish processing.</p>
+          </div>
+          <select id="submit-delay" class="setting-select">
+            <option value="1000">1.0 second</option>
+            <option value="1800" selected>1.8 seconds (Recommended)</option>
+            <option value="2500">2.5 seconds</option>
+            <option value="4000">4.0 seconds (for large files)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Section: Default Platforms -->
+      <section class="settings-section">
+        <h2 class="section-title">Default Active Platforms</h2>
+        <p class="section-desc">Choose which AI engines are checked by default when you open the popup.</p>
+        
+        <div class="defaults-grid" id="defaults-grid">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- Section: Hotkeys -->
+      <section class="settings-section">
+        <h2 class="section-title">Keyboard Shortcuts</h2>
+        <div class="shortcuts-list">
+          <div class="shortcut-row">
+            <span>Search in Selected AIs (in popup)</span>
+            <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span>Cycle to Next AI Result Tab</span>
+            <kbd>Alt</kbd> + <kbd>Right Arrow</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span>Cycle to Previous AI Result Tab</span>
+            <kbd>Alt</kbd> + <kbd>Left Arrow</kbd>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Save Status -->
+    <footer class="options-footer">
+      <span id="save-status" class="save-status">Settings saved automatically</span>
+    </footer>
+  </div>
+
+  <script src="/icons/platform-icons.js"></script>
+  <script src="/utils/platforms.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

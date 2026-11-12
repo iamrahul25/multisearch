@@ -1,0 +1,227 @@
+/* AI MultiSearch - Floating Switch Results Bar Styling */
+
+#ai-multisearch-root {
+  all: initial;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+#ai-multisearch-root * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.aims-switch-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 8px 12px;
+  border-radius: 18px;
+  border: 1.5px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .aims-switch-bar {
+    background: rgba(24, 24, 27, 0.92);
+    border-color: rgba(63, 63, 70, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.aims-brand-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 8px 4px 4px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: grab;
+}
+
+@media (prefers-color-scheme: dark) {
+  .aims-brand-label {
+    color: #f1f5f9;
+  }
+}
+
+.aims-brand-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5845eb;
+}
+
+.aims-platforms-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aims-platform-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .aims-platform-pill {
+    background: #27272a;
+    border-color: #3f3f46;
+    color: #e4e4e7;
+  }
+}
+
+.aims-platform-pill:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .aims-platform-pill:hover {
+    background: #3f3f46;
+    border-color: #52525b;
+  }
+}
+
+/* Active Platform Style (current tab) */
+.aims-platform-pill.active {
+  background: #ffffff;
+  border-color: #5845eb;
+  color: #0f172a;
+  box-shadow: 0 0 0 2px rgba(88, 69, 235, 0.15), 0 3px 10px rgba(88, 69, 235, 0.1);
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .aims-platform-pill.active {
+    background: #1e1b4b;
+    border-color: #818cf8;
+    color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.25);
+  }
+}
+
+.aims-platform-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aims-platform-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Action button (popout / menu) */
+.aims-action-btn {
+  background: transparent;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.aims-action-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+@media (prefers-color-scheme: dark) {
+  .aims-action-btn:hover {
+    background: #27272a;
+    color: #f1f5f9;
+  }
+}
+
+/* Status toast / notification */
+.aims-status-toast {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aims-status-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.aims-status-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: aims-spin 0.6s linear infinite;
+}
+
+@keyframes aims-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Minimized Pill View */
+.aims-switch-bar.minimized {
+  padding: 6px;
+  border-radius: 50%;
+}
+
+.aims-switch-bar.minimized .aims-platforms-container,
+.aims-switch-bar.minimized .aims-brand-text,
+.aims-switch-bar.minimized .aims-action-btn {
+  display: none;
+}
+
+.aims-switch-bar.minimized .aims-brand-label {
+  padding: 4px;
+}
+
