@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Mock chat</title></head>
+<body>
+<!-- mode=input: hidden <input type=file> + textarea; mode=paste: contenteditable accepting paste; mode=drop: contenteditable accepting drop -->
+<div id="composer-wrap"></div>
+<button id="send" disabled>Send</button>
+<pre id="log"></pre>
+<script>
+const mode = new URLSearchParams(location.search).get("mode") || "input";
+const log = (m) => (document.getElementById("log").textContent += m + "\n");
+const got = [];
+const send = document.getElementById("send");
+const refresh = () => (send.disabled = !(got.length || (box.value ?? box.textContent).trim()));
+let box;
+if (mode === "input") {
+  box = document.createElement("textarea"); box.id = "prompt";
+  const fi = document.createElement("input"); fi.type = "file"; fi.multiple = true; fi.style.display = "none";
+  fi.addEventListener("change", () => { [...fi.files].forEach((f) => { got.push(f.name + ":" + f.size); log("ATTACH " + f.name + " " + f.size + "B"); }); refresh(); });
+  document.body.appendChild(fi);
+} else {
+  box = document.createElement("div"); box.id = "prompt"; box.contentEditable = "true"; box.style.cssText = "border:1px solid #888;min-height:40px";
+  const handle = (e, dt) => { e.preventDefault(); [...dt.files].forEach((f) => { got.push(f.name + ":" + f.size); log("ATTACH " + f.name + " " + f.size + "B"); }); refresh(); };
+  if (mode === "paste") box.addEventListener("paste", (e) => { if (e.clipboardData.files.length) handle(e, e.clipboardData); });
+  if (mode === "drop") { box.addEventListener("dragover", (e) => e.preventDefault()); box.addEventListener("drop", (e) => handle(e, e.dataTransfer)); }
+}
+box.addEventListener("input", refresh);
+document.getElementById("composer-wrap").appendChild(box);
+send.addEventListener("click", () => log("SENT text=" + JSON.stringify(box.value ?? box.textContent) + " files=" + got.join(",")));
+</script>
+<script src="../content.js"></script>
+</body></html>

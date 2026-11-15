@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MultiSearch AI</title>
+<style>
+  /* shadcn-style semantic tokens (zinc palette) */
+  :root {
+    --background: #ffffff;
+    --foreground: #09090b;
+    --card: #ffffff;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --primary: #18181b;
+    --primary-foreground: #fafafa;
+    --ring: #18181b;
+    --accent: #f4f4f5;
+    --success: #16a34a;
+    --destructive: #dc2626;
+    --radius: 0.625rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: #09090b; --foreground: #fafafa; --card: #09090b;
+      --muted: #27272a; --muted-foreground: #a1a1aa; --border: #27272a; --input: #27272a;
+      --primary: #fafafa; --primary-foreground: #18181b; --ring: #d4d4d8; --accent: #27272a;
+      --success: #22c55e; --destructive: #ef4444;
+    }
+  }
+  :root[data-theme="dark"] {
+    --background: #09090b; --foreground: #fafafa; --card: #09090b;
+    --muted: #27272a; --muted-foreground: #a1a1aa; --border: #27272a; --input: #27272a;
+    --primary: #fafafa; --primary-foreground: #18181b; --ring: #d4d4d8; --accent: #27272a;
+    --success: #22c55e; --destructive: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; width: 360px; padding: 16px;
+    background: var(--background); color: var(--foreground);
+    font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .logo {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--primary); color: var(--primary-foreground);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .logo svg { width: 16px; height: 16px; }
+  .title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+  .subtitle { font-size: 12px; color: var(--muted-foreground); }
+  .label { font-size: 12px; font-weight: 500; color: var(--muted-foreground); margin: 14px 0 6px; display: flex; justify-content: space-between; }
+  .card {
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--card);
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  textarea {
+    width: 100%; min-height: 84px; resize: vertical; padding: 10px 12px; border: 0; outline: none;
+    background: transparent; color: var(--foreground); font: inherit; border-radius: var(--radius);
+  }
+  textarea::placeholder { color: var(--muted-foreground); }
+  /* One focus style for every control: 2px ring, 2px offset. */
+  :focus-visible, .card:focus-within, .site:has(input:focus-visible) { outline: 2px solid var(--ring); outline-offset: 2px; }
+  textarea:focus, textarea:focus-visible { outline: none; }
+  .toolbar {
+    display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-top: 1px solid var(--border);
+  }
+  .icon-btn {
+    display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 0;
+    border-radius: 6px; background: transparent; color: var(--muted-foreground); font: inherit; font-size: 12px; cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--accent); color: var(--foreground); }
+  .icon-btn svg { width: 15px; height: 15px; }
+  .count { margin-left: auto; font-size: 12px; color: var(--muted-foreground); }
+  #files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 8px;
+    border: 1px solid var(--border); border-radius: 999px; font-size: 12px; background: var(--muted);
+  }
+  .chip img { width: 22px; height: 22px; border-radius: 4px; object-fit: cover; }
+  .chip .ico { width: 22px; height: 22px; border-radius: 4px; background: var(--card); display: grid; place-items: center; color: var(--muted-foreground); }
+  .chip .ico svg { width: 13px; height: 13px; }
+  .chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+  .chip button { border: 0; background: none; color: var(--muted-foreground); cursor: pointer; padding: 0 2px; font-size: 14px; line-height: 1; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .site {
+    position: relative; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--card); user-select: none;
+    transition: background .15s, border-color .15s;
+  }
+  .site:hover { background: var(--accent); }
+  .site input { position: absolute; opacity: 0; pointer-events: none; }
+  .site .ai {
+    width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; flex-shrink: 0;
+    background: var(--background); border: 1px solid var(--border); overflow: hidden;
+  }
+  .site .ai img { width: 16px; height: 16px; display: block; object-fit: contain; }
+  .site .ai .glyph { display: grid; place-items: center; color: var(--foreground); }
+  .site .ai .glyph svg { width: 13px; height: 13px; }
+  .site .name { font-weight: 500; font-size: 12.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .check {
+    width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--input); display: grid; place-items: center; flex-shrink: 0;
+  }
+  .check svg { width: 9px; height: 9px; opacity: 0; color: var(--primary-foreground); transition: opacity .15s; }
+  /* Selected: tinted card, solid border, filled badge and icon. */
+  .site:has(input:checked) { background: var(--accent); border-color: var(--primary); }
+  .site:has(input:checked) .check { background: var(--primary); border-color: var(--primary); }
+  .site:has(input:checked) .check svg { opacity: 1; }
+  .row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .switch-label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+  .switch { position: relative; width: 32px; height: 18px; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch .track {
+    position: absolute; inset: 0; border-radius: 999px; background: var(--input); transition: background .15s;
+  }
+  .switch .track::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--background); transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  }
+  .switch input:checked + .track { background: var(--primary); }
+  .switch input:checked + .track::after { transform: translateX(14px); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--ring); outline-offset: 2px; }
+  button.primary {
+    width: 100%; height: 38px; margin-top: 14px; border: 0; border-radius: var(--radius);
+    background: var(--primary); color: var(--primary-foreground); font: inherit; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .15s;
+  }
+  button.primary:hover { opacity: .9; }
+  button.primary:disabled { opacity: .5; cursor: default; }
+  button.primary svg { width: 16px; height: 16px; }
+  button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  #status { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  #status:empty { display: none; }
+  .result {
+    display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--muted); font-size: 12px;
+  }
+  .result svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+  .result.ok svg { color: var(--success); }
+  .result.bad svg { color: var(--destructive); }
+  .result .msg { color: var(--muted-foreground); }
+  .result .who { font-weight: 600; color: var(--foreground); }
+  .hint { font-size: 11px; color: var(--muted-foreground); margin-top: 8px; text-align: center; }
+  [hidden] { display: none !important; }
+  /* Top tabs */
+  .tabs { display: flex; gap: 2px; padding: 3px; margin-bottom: 4px; background: var(--muted); border-radius: 8px; }
+  .tab {
+    flex: 1; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--muted-foreground);
+    font: inherit; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .tab svg { width: 14px; height: 14px; }
+  .tab[aria-selected="true"] { background: var(--background); color: var(--foreground); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  /* Search input */
+  .search-box { display: flex; align-items: center; gap: 8px; padding: 0 10px; height: 40px; }
+  .search-box svg { width: 16px; height: 16px; color: var(--muted-foreground); flex-shrink: 0; }
+  .search-box input {
+    flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; color: var(--foreground); font: inherit; font-size: 14px;
+  }
+  .search-box input::placeholder { color: var(--muted-foreground); }
+  /* Web / Images segmented control */
+  .seg { display: inline-flex; gap: 2px; padding: 2px; background: var(--muted); border-radius: 7px; }
+  .seg button {
+    height: 22px; padding: 0 10px; border: 0; border-radius: 5px; background: transparent; color: var(--muted-foreground);
+    font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--background); color: var(--foreground); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    </div>
+    <div>
+      <div class="title">MultiSearch AI</div>
+      <div class="subtitle">One query, every AI and search engine</div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="ai" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg>
+      AI Chat
+    </button>
+    <button class="tab" role="tab" data-tab="search" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      Search
+    </button>
+  </div>
+
+<div id="panel-ai">
+  <div class="label"><span>Prompt</span></div>
+  <div class="card">
+    <textarea id="prompt" placeholder="Ask anything…" aria-label="Prompt"></textarea>
+    <div class="toolbar">
+      <label class="icon-btn" for="file" title="Attach files">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>
+        Attach
+      </label>
+      <input type="file" id="file" multiple hidden>
+      <span class="count" id="count">0 files</span>
+    </div>
+  </div>
+  <div id="files"></div>
+
+  <div class="label"><span>Send to</span><span id="picked" class="count">0 selected</span></div>
+  <div class="grid" id="sites"></div>
+
+  <div class="row">
+    <label class="switch-label">
+      <span class="switch"><input type="checkbox" id="autosend" checked><span class="track"></span></span>
+      Send automatically
+    </label>
+  </div>
+
+  <button id="go" class="primary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+    Send to selected
+  </button>
+  <div class="hint">Keep this popup open until all sites finish.</div>
+  <div id="status" role="status" aria-live="polite"></div>
+</div>
+
+<div id="panel-search" hidden>
+  <div class="label"><span>Search</span></div>
+  <div class="card search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="q" type="text" placeholder="Search everywhere…" aria-label="Search query" autocomplete="off">
+  </div>
+
+  <div class="label"><span>Search on</span><span id="eng-picked" class="count">0 selected</span></div>
+  <div class="grid" id="engines"></div>
+
+  <div class="row">
+    <div class="seg" role="group" aria-label="Search type">
+      <button type="button" data-mode="web" aria-pressed="true">Web</button>
+      <button type="button" data-mode="images" aria-pressed="false">Images</button>
+    </div>
+  </div>
+
+  <button id="search-go" class="primary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    Search selected
+  </button>
+  <div class="hint">Opens one tab per engine. Switch tabs to compare.</div>
+  <div id="search-status" role="status" aria-live="polite" style="margin-top:12px;display:flex;flex-direction:column;gap:6px"></div>
+</div>
+
+  <script src="sites.js"></script>
+  <script src="engines.js"></script>
+  <script src="popup.js"></script>
+  <script src="search.js"></script>
+</body>
+</html>
